@@ -12,6 +12,9 @@ export default function App() {
   const [radius, setRadius] = React.useState(50);
   const [resMode, setResMode] = React.useState("include"); // exclude | include | only
   const [resNational, setResNational] = React.useState(true);
+  const [prompt, setPrompt] = React.useState(
+    localStorage.getItem("prompt") || ""
+  );
 
   // -----------------------------
   // Provider list + dossiers
@@ -27,6 +30,7 @@ export default function App() {
   async function loadInstant() {
     try {
       localStorage.setItem("postcode", postcode);
+      localStorage.setItem("prompt", prompt);
 
       const url = new URL(`${API_BASE}/instant`);
       url.searchParams.set("postcode", postcode);
@@ -34,6 +38,11 @@ export default function App() {
       url.searchParams.set("target_count", "10");
       url.searchParams.set("residential_mode", resMode);
       url.searchParams.set("national_for_residential", String(resNational));
+      
+      // Only include prompt if non-empty
+      if (prompt.trim()) {
+        url.searchParams.set("prompt", prompt);
+      }
 
       const res = await fetch(url.toString());
       const data = await res.json();
@@ -117,6 +126,23 @@ export default function App() {
                 placeholder="UK postcode e.g. MK18 3BN"
                 className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
               />
+
+              {/* Prompt input */}
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-1">
+                  Describe needs / preferences
+                </label>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="e.g., Need autism support, prefer small class sizes..."
+                  className="rounded-xl border border-slate-300 px-3 py-2 text-sm w-full resize-none"
+                  rows={3}
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  💡 Adding specific needs helps improve recommendations
+                </p>
+              </div>
 
               {/* Radius selector */}
               <select
