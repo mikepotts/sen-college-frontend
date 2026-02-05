@@ -6,13 +6,13 @@ export default function App() {
   // -----------------------------
   // Search form state
   // -----------------------------
-  const [postcode, setPostcode] = React.useState(
+  const [postcode, setPostcode] = React.useState(() =>
     localStorage.getItem("postcode") || "MK18 3BN"
   );
   const [radius, setRadius] = React.useState(50);
   const [resMode, setResMode] = React.useState("include"); // exclude | include | only
   const [resNational, setResNational] = React.useState(true);
-  const [prompt, setPrompt] = React.useState(
+  const [prompt, setPrompt] = React.useState(() =>
     localStorage.getItem("prompt") || ""
   );
 
@@ -140,7 +140,7 @@ export default function App() {
                   rows={3}
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  💡 Adding specific needs helps improve recommendations
+                  <span aria-label="Tip">💡</span> Adding specific needs helps improve recommendations
                 </p>
               </div>
 
