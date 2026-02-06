@@ -115,7 +115,7 @@ export default function App() {
               {/* Prompt input - PRIMARY INPUT */}
               <div>
                 <label className="text-sm font-medium text-slate-700 block mb-1">
-                  What are you looking for? <span className="text-red-500">*</span>
+                  What are you looking for? <span className="text-red-500" aria-label="required">*</span>
                 </label>
                 <textarea
                   value={prompt}
@@ -123,9 +123,11 @@ export default function App() {
                   placeholder="e.g., I want to do catering at a residential college with autism support..."
                   className="rounded-xl border border-slate-300 px-3 py-2 text-sm w-full resize-none"
                   rows={4}
+                  required
+                  aria-required="true"
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  💡 Be specific! Mention interests (like catering, IT), needs (autism, ADHD), and preferences (residential, small classes)
+                  <span role="img" aria-label="Tip">💡</span> Be specific! Mention interests (like catering, IT), needs (autism, ADHD), and preferences (residential, small classes)
                 </p>
               </div>
 

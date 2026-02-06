@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { buildContactsClipboardText } from "./utils/copyContacts.js";
+import { formatFieldArray } from "./utils/formatters.js";
 
 export default function InstantDossierPanel({
   dossier,
@@ -191,19 +192,19 @@ export default function InstantDossierPanel({
                   {dossier.inferred_intent.vocational_areas?.length > 0 && (
                     <div className="text-sm text-slate-700 mb-2">
                       <span className="font-medium">Vocational interests:</span>{" "}
-                      {dossier.inferred_intent.vocational_areas.map(v => v.replace(/_/g, ' ')).join(', ')}
+                      {formatFieldArray(dossier.inferred_intent.vocational_areas)}
                     </div>
                   )}
                   {dossier.inferred_intent.send_needs?.length > 0 && (
                     <div className="text-sm text-slate-700 mb-2">
                       <span className="font-medium">SEND needs:</span>{" "}
-                      {dossier.inferred_intent.send_needs.map(s => s.replace(/_/g, ' ')).join(', ')}
+                      {formatFieldArray(dossier.inferred_intent.send_needs)}
                     </div>
                   )}
                   {dossier.inferred_intent.target_settings?.length > 0 && (
                     <div className="text-sm text-slate-700">
                       <span className="font-medium">Looking for:</span>{" "}
-                      {dossier.inferred_intent.target_settings.map(s => s.replace(/_/g, ' ')).join(', ')}
+                      {formatFieldArray(dossier.inferred_intent.target_settings)}
                     </div>
                   )}
                 </div>
