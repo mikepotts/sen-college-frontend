@@ -176,18 +176,31 @@ export default function InstantDossierPanel({
             </p>
 
             <ul className="space-y-2">
-              {(dossier?.why_it_matches ?? []).map((text, idx) => (
+              {/* Display match_reasons from GenAI backend if available */}
+              {(dossier?.match_reasons ?? []).map((text, idx) => (
                 <li
-                  key={idx}
+                  key={`match-${idx}`}
                   className="text-sm text-slate-700 flex gap-2 leading-snug"
                 >
-                  <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+                  <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
                   <span>{text}</span>
                 </li>
               ))}
+              
+              {/* Fallback to why_it_matches if match_reasons not available */}
+              {(!dossier?.match_reasons || dossier.match_reasons.length === 0) &&
+                (dossier?.why_it_matches ?? []).map((text, idx) => (
+                  <li
+                    key={`why-${idx}`}
+                    className="text-sm text-slate-700 flex gap-2 leading-snug"
+                  >
+                    <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+                    <span>{text}</span>
+                  </li>
+                ))}
 
-              {(!dossier?.why_it_matches ||
-                dossier.why_it_matches.length === 0) && (
+              {(!dossier?.match_reasons || dossier.match_reasons.length === 0) &&
+                (!dossier?.why_it_matches || dossier.why_it_matches.length === 0) && (
                 <li className="text-sm text-slate-500">
                   No match details available yet.
                 </li>
