@@ -4,14 +4,12 @@ import { API_BASE } from "./lib/config.js";
 
 export default function App() {
   // -----------------------------
-  // Search form state
+  // Search form state - simplified for GenAI-driven matching
   // -----------------------------
   const [postcode, setPostcode] = React.useState(() =>
     localStorage.getItem("postcode") || "MK18 3BN"
   );
   const [radius, setRadius] = React.useState(50);
-  const [resMode, setResMode] = React.useState("include"); // exclude | include | only
-  const [resNational, setResNational] = React.useState(true);
   const [prompt, setPrompt] = React.useState(() =>
     localStorage.getItem("prompt") || ""
   );
@@ -25,7 +23,7 @@ export default function App() {
   const [selectedProviderId, setSelectedProviderId] = React.useState(null);
 
   // -----------------------------
-  // Fetcher: load providers
+  // Fetcher: load providers with GenAI-driven matching
   // -----------------------------
   async function loadInstant() {
     try {
@@ -35,11 +33,9 @@ export default function App() {
       const url = new URL(`${API_BASE}/instant`);
       url.searchParams.set("postcode", postcode);
       url.searchParams.set("radius_miles", String(radius));
-      url.searchParams.set("target_count", "10");
-      url.searchParams.set("residential_mode", resMode);
-      url.searchParams.set("national_for_residential", String(resNational));
+      url.searchParams.set("target_count", "20");
       
-      // Only include prompt if non-empty
+      // Send prompt (primary input for GenAI intent extraction)
       if (prompt.trim()) {
         url.searchParams.set("prompt", prompt);
       }
@@ -47,11 +43,8 @@ export default function App() {
       const res = await fetch(url.toString());
       const data = await res.json();
 
-      // Combine local NR + residential results
-      const allDossiers = [
-        ...(data.instant_dossiers || []),
-        ...(data.residential_results || []),
-      ];
+      // Use the providers array from the new API response format
+      const allDossiers = data.providers || [];
 
       // Build provider list
       const pList = allDossiers.map((d) => ({
@@ -59,7 +52,7 @@ export default function App() {
         name: d.provider.name,
       }));
 
-      // Create ID → dossier map
+      // Create ID → dossier map
       const map = {};
       allDossiers.forEach((d) => (map[d.provider.provider_id] = d));
 
@@ -106,7 +99,7 @@ export default function App() {
             {/* Search Controls */}
             <h1 className="text-lg font-semibold">Find Colleges</h1>
             <p className="text-sm text-slate-600 mt-1">
-              Enter a UK postcode and radius to search.
+              Describe what you're looking for in your own words.
             </p>
 
             {/* --------------------- */}
@@ -119,72 +112,60 @@ export default function App() {
               }}
               className="mt-4 grid grid-cols-1 gap-3"
             >
-              {/* Postcode input */}
-              <input
-                value={postcode}
-                onChange={(e) => setPostcode(e.target.value)}
-                placeholder="UK postcode e.g. MK18 3BN"
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
-              />
-
-              {/* Prompt input */}
+              {/* Prompt input - PRIMARY INPUT */}
               <div>
                 <label className="text-sm font-medium text-slate-700 block mb-1">
-                  Describe needs / preferences
+                  What are you looking for? <span className="text-red-500" aria-label="required">*</span>
                 </label>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g., Need autism support, prefer small class sizes..."
+                  placeholder="e.g., I want to do catering at a residential college with autism support..."
                   className="rounded-xl border border-slate-300 px-3 py-2 text-sm w-full resize-none"
-                  rows={3}
+                  rows={4}
+                  required
+                  aria-required="true"
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  <span aria-label="Tip">💡</span> Adding specific needs helps improve recommendations
+                  <span role="img" aria-label="Tip">💡</span> Be specific! Mention interests (like catering, IT), needs (autism, ADHD), and preferences (residential, small classes)
                 </p>
               </div>
 
-              {/* Radius selector */}
-              <select
-                value={radius}
-                onChange={(e) => setRadius(parseInt(e.target.value, 10))}
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
-              >
-                {[30, 40, 50, 80, 100, 150, 200].map((m) => (
-                  <option key={m} value={m}>
-                    Search within {m} miles
-                  </option>
-                ))}
-              </select>
-
-              {/* Residential mode */}
-              <label className="text-sm flex items-center gap-2">
-                Residential mode:
-                <select
-                  value={resMode}
-                  onChange={(e) => setResMode(e.target.value)}
-                  className="rounded-xl border border-slate-300 px-2 py-1 text-sm"
-                >
-                  <option value="exclude">Exclude</option>
-                  <option value="include">Include</option>
-                  <option value="only">Only residential</option>
-                </select>
-              </label>
-
-              {/* National for residential */}
-              <label className="text-sm flex items-center gap-2">
+              {/* Postcode input */}
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-1">
+                  Your postcode
+                </label>
                 <input
-                  type="checkbox"
-                  checked={resNational}
-                  onChange={(e) => setResNational(e.target.checked)}
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  placeholder="UK postcode e.g. MK18 3BN"
+                  className="rounded-xl border border-slate-300 px-3 py-2 text-sm w-full"
                 />
-                Include residential nationally
-              </label>
+              </div>
+
+              {/* Radius selector */}
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-1">
+                  Search radius
+                </label>
+                <select
+                  value={radius}
+                  onChange={(e) => setRadius(parseInt(e.target.value, 10))}
+                  className="rounded-xl border border-slate-300 px-3 py-2 text-sm w-full"
+                >
+                  {[30, 40, 50, 80, 100, 150, 200].map((m) => (
+                    <option key={m} value={m}>
+                      Within {m} miles
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {/* Submit button */}
               <button
                 type="submit"
-                className="rounded-xl bg-slate-900 text-white px-3 py-2 text-sm"
+                className="rounded-xl bg-slate-900 text-white px-3 py-2 text-sm font-medium hover:bg-slate-800 transition-colors"
               >
                 Search
               </button>

@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { buildContactsClipboardText } from "./utils/copyContacts.js";
+import { formatFieldArray } from "./utils/formatters.js";
 
 export default function InstantDossierPanel({
   dossier,
@@ -121,6 +122,14 @@ export default function InstantDossierPanel({
             </p>
 
             <div className="flex flex-wrap gap-2 mt-2">
+              {/* Display match_reasons as badges if available */}
+              {(dossier?.match_reasons ?? []).map((reason, idx) => (
+                <Badge key={idx} variant="default" className="rounded-xl bg-blue-100 text-blue-800 border-blue-200">
+                  {reason}
+                </Badge>
+              ))}
+
+              {/* Legacy badges */}
               {(dossier?.badges ?? []).map((b) => (
                 <Badge key={b} variant="secondary" className="rounded-xl">
                   {b}
@@ -165,14 +174,53 @@ export default function InstantDossierPanel({
 
           <Separator className="my-4" />
 
+          {/* Inferred Intent - NEW for GenAI matching */}
+          {dossier?.inferred_intent && (
+            <>
+              <section className="mb-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-slate-600" />
+                  <h3 className="font-semibold text-base">What we understood from your search</h3>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  {dossier.inferred_intent.residential && (
+                    <div className="text-sm text-slate-700 mb-2">
+                      <span className="font-medium">Residential:</span>{" "}
+                      <span className="capitalize">{dossier.inferred_intent.residential}</span>
+                    </div>
+                  )}
+                  {dossier.inferred_intent.vocational_areas?.length > 0 && (
+                    <div className="text-sm text-slate-700 mb-2">
+                      <span className="font-medium">Vocational interests:</span>{" "}
+                      {formatFieldArray(dossier.inferred_intent.vocational_areas)}
+                    </div>
+                  )}
+                  {dossier.inferred_intent.send_needs?.length > 0 && (
+                    <div className="text-sm text-slate-700 mb-2">
+                      <span className="font-medium">SEND needs:</span>{" "}
+                      {formatFieldArray(dossier.inferred_intent.send_needs)}
+                    </div>
+                  )}
+                  {dossier.inferred_intent.target_settings?.length > 0 && (
+                    <div className="text-sm text-slate-700">
+                      <span className="font-medium">Looking for:</span>{" "}
+                      {formatFieldArray(dossier.inferred_intent.target_settings)}
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <Separator className="my-4" />
+            </>
+          )}
+
           {/* Why it matches */}
           <section className="mb-5">
             <h3 className="font-semibold text-base mb-2">
               Why this college may suit your young person
             </h3>
             <p className="text-sm text-slate-600 mb-3">
-              This match is based on interests and support needs. SEND
-              suitability is prioritised by default unless you change it.
+              This match is based on your search and the provider's characteristics.
             </p>
 
             <ul className="space-y-2">
